@@ -15,21 +15,21 @@ const dateFormat = ref('dd/mm/yy')
 const toast = useToast()
 const conversions = ref([])
 
-const formatDateTime = (value) => {
+const formatDate = (value) => {
   const date = new Date(value)
   const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
+  const month = date.getMonth() + 1 > 9 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`
+  const day = date.getDate() > 9 ? date.getDate() : `0${date.getDate()}`
   return `${day}/${month}/${year}`
 }
 
 const amount = ref(1)
 const selectedDate = ref(new Date())
-const selectedDateFormatted = ref(formatDateTime(selectedDate.value))
+const selectedDateFormatted = ref(formatDate(selectedDate.value))
 const selectedTab = ref('convert')
 
 watch(selectedDate, (value) => {
-  selectedDateFormatted.value = formatDateTime(value)
+  selectedDateFormatted.value = formatDate(value)
 })
 
 const formatCurrency = (value) => {
@@ -67,8 +67,8 @@ const submit = async () => {
   }
   const date = new Date(selectedDate.value)
   const year = date.getFullYear()
-  const month = date.getMonth() + 1
-  const day = date.getDate()
+  const month = date.getMonth() + 1 > 9 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`
+  const day = date.getDate() > 9 ? date.getDate() : `0${date.getDate()}`
   const dateFormatted = `${year}-${month}-${day}`
   const conversion = await converter(dateFormatted, amount.value)
 
@@ -246,7 +246,7 @@ const loadHistory = async () => {
                   </Column>
                   <Column field="date" header="Fecha Consulta" style="width: 20%">
                     <template #body="slotProps">
-                      {{ formatDateTime(slotProps.data.date) }}
+                      {{ formatDate(slotProps.data.date) }}
                     </template>
                   </Column>
                   <Column field="uf_value" header="Valor UF del día" class="text-center">
