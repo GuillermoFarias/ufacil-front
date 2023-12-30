@@ -1,7 +1,10 @@
 <script setup>
 import Button from 'primevue/button'
 import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { login } from '@/services/auth'
 
+const router = useRouter()
 const loading = ref(false)
 const userData = reactive({
   email: '',
@@ -10,12 +13,12 @@ const userData = reactive({
 
 const userPressets = {
   user: {
-    email: 'user@converte.app',
-    password: 'user'
+    email: 'tstark@ufacil.com',
+    password: 'tony'
   },
   admin: {
-    email: 'admin@converter.app',
-    password: 'admin'
+    email: 'srogers@ufacil.com',
+    password: 'steve'
   }
 }
 
@@ -29,12 +32,18 @@ const assignAdmin = () => {
   userData.password = userPressets.admin.password
 }
 
-const submit = () => {
-  console.log('asdasd')
+const submit = async () => {
   loading.value = true
+  const response = await login(userData.email, userData.password)
+
+  if (!response) {
+    return
+  }
+
   setTimeout(() => {
     loading.value = false
-  }, 2000)
+    router.push({ name: 'dashboard' })
+  }, 1000)
 }
 </script>
 <template>
@@ -44,14 +53,14 @@ const submit = () => {
         <img src="/images/icon.svg" alt="Image" height="80" class="mr-1" />
       </div>
       <div class="flex align-items-center justify-content-center mt-0 pt-0 mb-5">
-        <div class="text-800 text-3xl font-medium app-font">UFácil</div>
+        <div class="text-800 text-3xl font-medium app-font">UFacil</div>
       </div>
       <div class="flex justify-content-center">
         <div class="surface-card p-4 shadow-2 border-round">
           <div class="text-center mb-5">
             <div class="text-700 text-3xl font-medium mb-3">Bienvenido</div>
-            <span class="text-600 font-medium line-height-3">No tienes una cuenta?</span>
-            <a class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Registrate</a>
+            <!-- <span class="text-600 font-medium line-height-3">No tienes una cuenta?</span> -->
+            <!-- <a class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Registrate</a> -->
           </div>
 
           <div>

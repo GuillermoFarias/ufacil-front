@@ -1,14 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { logout } from '@/services/auth'
+import { useUser } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+const userStore = useUser()
+const user = computed(() => userStore.user)
 const menuUser = ref(null)
 const toggleMenu = (event) => {
   menuUser.value.toggle(event)
 }
 
-const logout = () => {
-  // RODO: logout
-  console.log('logout')
+const exit = () => {
+  logout()
+  router.push({ name: 'login' })
 }
 </script>
 <template>
@@ -20,7 +26,7 @@ const logout = () => {
       >
         <div class="flex align-content-center align-items-center mr-4">
           <img src="/images/icon-withe.svg" alt="Image" height="40" class="mr-0 lg:mr-1" />
-          <div class="text-green-50 text-3xl font-medium app-font mb-2">UFácil</div>
+          <div class="text-green-50 text-3xl font-medium app-font mb-2">UFacil</div>
         </div>
 
         <a
@@ -69,19 +75,20 @@ const logout = () => {
                 class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center hover:bg-blue-400 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple"
                 @click="toggleMenu"
               >
-                <Avatar label="JL" shape="circle" size="medium" class="mr-3" />
+                <Avatar label="UF" shape="circle" size="medium" class="mr-3" />
                 <div class="block">
-                  <div class="text-blue-50 font-medium">Josephine Lillard</div>
-                  <span class="text-blue-100 font-medium text-sm">Demo</span>
+                  <div class="text-blue-50 font-medium">{{ user.email }}</div>
+                  <span class="text-blue-100 font-medium text-sm">{{ user.role }}</span>
                 </div>
               </a>
               <Menu ref="menuUser" :popup="true" aria-selected="false">
                 <template #end>
                   <button
+                    @click="exit"
                     class="w-full p-link flex align-items-center p-2 pl-4 text-color hover:surface-200 border-noround"
                   >
                     <i class="pi pi-sign-out" />
-                    <span @click="logout" class="ml-2">Log Out</span>
+                    <span class="ml-2">Salir</span>
                   </button>
                 </template>
               </Menu>
