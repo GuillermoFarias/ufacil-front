@@ -23,6 +23,17 @@ const formatDate = (value) => {
   return `${day}/${month}/${year}`
 }
 
+const formatDateTime = (value) => {
+  const date = new Date(value)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1 > 9 ? date.getMonth() + 1 : `0${date.getMonth() + 1}`
+  const day = date.getDate() > 9 ? date.getDate() : `0${date.getDate()}`
+  const hours = date.getHours() > 9 ? date.getHours() : `0${date.getHours()}`
+  const minutes = date.getMinutes() > 9 ? date.getMinutes() : `0${date.getMinutes()}`
+  const seconds = date.getSeconds() > 9 ? date.getSeconds() : `0${date.getSeconds()}`
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`
+}
+
 const amount = ref(1)
 const selectedDate = ref(new Date())
 const selectedDateFormatted = ref(formatDate(selectedDate.value))
@@ -203,71 +214,79 @@ const loadHistory = async () => {
         <!-- History -->
         <div
           v-if="selectedTab === 'history' && user.role == 'admin'"
-          class="surface-card p-5 shadow-2 border-round fadein animation-duration-900"
+          class="surface-card p-5 shadow-2 border-round fadein animation-duration-900 w-full"
         >
           <div class="text-900 font-semibold text-lg mt-3">
             <i class="pi pi-history mr-2"></i>
             Historial
           </div>
           <Divider></Divider>
-          <div class="flex">
-            <div class="grid">
-              <div class="card">
-                <DataTable
-                  :value="conversions"
-                  tableStyle="min-width: 50rem"
-                  :striped-rows="true"
-                  :show-gridlines="true"
-                  class="overflow-x-auto"
-                  ref="table"
-                  :paginator="true"
-                  scrollable
-                  :rows="5"
-                >
-                  <template #header>
-                    <div style="text-align: left">
-                      <Button
-                        icon="pi pi-external-link"
-                        label="Export"
-                        size="small"
-                        class="w-auto"
-                        outlined
-                        rounded
-                        @click="exportCSV($event)"
-                      />
-                    </div>
-                  </template>
-                  <Column field="user.name" header="Usuario" style="width: 20%">
-                    <template #body="slotProps">
-                      {{ slotProps.data.user.name }}
-                      <br />
-                      <small>{{ slotProps.data.user.email }}</small>
-                    </template>
-                  </Column>
-                  <Column field="date" header="Fecha Consulta" style="width: 20%">
-                    <template #body="slotProps">
-                      {{ formatDate(slotProps.data.date) }}
-                    </template>
-                  </Column>
-                  <Column field="uf_value" header="Valor UF del día" class="text-center">
-                    <template #body="slotProps">
-                      $ {{ formatCurrency(slotProps.data.uf_value) }}
-                    </template>
-                  </Column>
-                  <Column
-                    field="amount"
-                    header="Cantidad UF"
-                    style="width: 20%"
-                    class="text-center"
+          <div class="card">
+            <DataTable
+              :value="conversions"
+              :striped-rows="true"
+              responsive-layout="scroll"
+              :show-gridlines="true"
+              class="p-datatable"
+              ref="table"
+              :paginator="true"
+              scrollable
+              :rows="5"
+            >
+              <template #header>
+                <div style="text-align: left">
+                  <Button
+                    icon="pi pi-external-link"
+                    label="Export"
+                    size="small"
+                    class="w-auto"
+                    outlined
+                    rounded
+                    @click="exportCSV($event)"
                   />
-                  <Column field="converted_amount" header="Conversión" style="width: 20%">
-                    <template #body="slotProps">
-                      $ {{ formatCurrency(slotProps.data.converted_amount) }}
-                    </template>
-                  </Column>
-                </DataTable>
-              </div>
-            </div>
+                </div>
+              </template>
+              <Column field="user.name" sortable header="Usuario" style="width: 20%">
+                <template #body="slotProps">
+                  {{ slotProps.data.user.name }}
+                  <br />
+                  <small>{{ slotProps.data.user.email }}</small>
+                </template>
+              </Column>
+              <Column field="date" sortable header="Fecha UF" style="width: 15%">
+                <template #body="slotProps">
+                  {{ formatDate(slotProps.data.date) }}
+                </template>
+              </Column>
+              <Column
+                field="uf_value"
+                header="Valor UF del día"
+                class="text-center"
+                style="width: 15%"
+                sortable
+              >
+                <template #body="slotProps">
+                  $ {{ formatCurrency(slotProps.data.uf_value) }}
+                </template>
+              </Column>
+              <Column
+                field="amount"
+                header="Cantidad UF"
+                sortable
+                style="width: 15%"
+                class="text-center"
+              />
+              <Column field="converted_amount" header="Conversión" style="width: 15%">
+                <template #body="slotProps">
+                  $ {{ formatCurrency(slotProps.data.converted_amount) }}
+                </template>
+              </Column>
+              <Column field="created_at" header="Fecha Consulta" sortable style="width: 35%">
+                <template #body="slotProps">
+                  {{ formatDateTime(slotProps.data.created_at) }}
+                </template>
+              </Column>
+            </DataTable>
           </div>
         </div>
       </div>
