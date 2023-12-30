@@ -18,11 +18,6 @@ const createAxiosInstance = () => {
                 config.headers['Authorization'] = 'Bearer ' + token;
             }
 
-            config.headers['Content-Type'] = 'application/json';
-            config.headers['Access-Control-Allow-Origin'] = '*';
-            config.headers['Access-Control-Allow-Headers'] = '*';
-            config.headers['Access-Control-Allow-Credentials'] = true;
-
             return config;
         },
         error => {
