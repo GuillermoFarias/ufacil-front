@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 const apiUrl = import.meta.env.VITE_API_URL + '/api';
 
 const createAxiosInstance = () => {
+    console.log(apiUrl);
     const router = useRouter();
 
     const instance = axios.create();
