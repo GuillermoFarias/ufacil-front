@@ -1,0 +1,13 @@
+@import 'primeflex/primeflex.css';
+@import "primevue/resources/themes/lara-light-blue/theme.css";
+@import "primeicons/primeicons.css";
+@import url("https://fonts.googleapis.com/css2?family=Agbalumo&display=swap");
+
+
+.app-font {
+    font-family: "Agbalumo", sans-serif;
+}
+
+body {
+    margin: 0;
+}
