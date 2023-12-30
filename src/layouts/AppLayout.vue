@@ -77,8 +77,9 @@ const exit = () => {
               >
                 <Avatar label="UF" shape="circle" size="medium" class="mr-3" />
                 <div class="block">
-                  <div class="text-blue-50 font-medium">{{ user.email }}</div>
-                  <span class="text-blue-100 font-medium text-sm">{{ user.role }}</span>
+                  <div class="text-blue-50 font-medium">{{ user.name }}</div>
+                  <small class="text-blue-50 text-sm">{{ user.email }}</small>
+                  <small class="text-blue-100 font-medium text-sm"> | {{ user.role }}</small>
                 </div>
               </a>
               <Menu ref="menuUser" :popup="true" aria-selected="false">

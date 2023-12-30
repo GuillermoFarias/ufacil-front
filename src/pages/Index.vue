@@ -1,51 +1,98 @@
 <script setup>
 import AppLayout from '@/layouts/AppLayout.vue'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { converter, getHistory } from '@/services/converter'
+import { useToast } from 'primevue/usetoast'
+import { useUser } from '@/stores/user'
 
+const userStore = useUser()
+const user = computed(() => userStore.user)
 const loading = ref(false)
-
-const submit = () => {
-  loading.value = true
-  setTimeout(() => {
-    loading.value = false
-  }, 2000)
-}
-
 const table = ref(null)
 const total = ref(0)
+const ufValue = ref(0)
 const dateFormat = ref('dd/mm/yy')
-const entries = ref([
-  {
-    id: '1000',
-    code: 'f230fh0g3',
-    name: 'Bamboo Watch',
-    description: 'Product Description',
-    image: 'bamboo-watch.jpg',
-    price: 65,
-    category: 'Accessories',
-    quantity: 24,
-    inventoryStatus: 'INSTOCK',
-    rating: 5
-  }
-])
+const toast = useToast()
+const conversions = ref([])
+
+const formatDateTime = (value) => {
+  const date = new Date(value)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${day}/${month}/${year}`
+}
 
 const amount = ref(1)
 const selectedDate = ref(new Date())
+const selectedDateFormatted = ref(formatDateTime(selectedDate.value))
 const selectedTab = ref('convert')
+
+watch(selectedDate, (value) => {
+  selectedDateFormatted.value = formatDateTime(value)
+})
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
-    currency: 'CLP'
-  }).format(value)
+    currency: 'CLP',
+    minimumFractionDigits: 2
+  })
+    .format(value)
+    .replace('$', '')
 }
 
-const changeTab = (tab) => {
+const changeTab = async (tab) => {
+  if (tab === 'history') {
+    await loadHistory()
+  }
   selectedTab.value = tab
 }
 
 const exportCSV = () => {
   table.value.exportCSV()
+}
+
+const submit = async () => {
+  loading.value = true
+  if (!selectedDate.value || amount.value <= 0) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Debe ingresar una fecha y una cantidad válida',
+      life: 3000
+    })
+    loading.value = false
+    return
+  }
+  const date = new Date(selectedDate.value)
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const dateFormatted = `${year}-${month}-${day}`
+  const conversion = await converter(dateFormatted, amount.value)
+
+  console.log(conversion)
+  if (!conversion) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo realizar la conversión',
+      life: 3000
+    })
+    return
+  }
+
+  total.value = conversion.converted_amount
+  ufValue.value = conversion.uf_value
+  loading.value = false
+}
+
+const loadHistory = async () => {
+  const response = await getHistory()
+
+  console.log(response)
+  conversions.value = response
 }
 </script>
 <template>
@@ -67,7 +114,7 @@ const exportCSV = () => {
               <span class="font-medium">Convertidor</span>
             </a>
           </li>
-          <li>
+          <li v-if="user.role == 'admin'">
             <a
               v-ripple
               class="flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors p-ripple"
@@ -89,7 +136,7 @@ const exportCSV = () => {
           <Divider></Divider>
           <div class="flex">
             <div class="grid">
-              <div class="col">
+              <div class="col-4">
                 <div class="field">
                   <label for="email" class="block font-medium text-900 mb-2">Fecha</label>
                   <Calendar
@@ -130,17 +177,20 @@ const exportCSV = () => {
                 </div>
               </div>
               <div class="col text-cente h-full">
-                <div class="flex flex-column shadow-1 border-round-lg overflow-hidden">
+                <div class="flex flex-column shadow-1 border-round-lg overflow-hidden w-full">
                   <div class="bg-primary p-5">
                     <div
                       class="flex justify-content-between flex-wrap gap-3 mb-4 align-items-center"
                     >
                       <div class="text-4xl font-bold">$</div>
-                      <div class="text-4xl font-bold">{{ total }}</div>
+                      <div class="text-4xl font-bold fadein animation-duration-800">
+                        {{ formatCurrency(total) }}
+                      </div>
                     </div>
                     <p>
-                      La tasa de cambio para el día <strong>fecha</strong> es de
-                      <strong>{{ 0 }}</strong>
+                      El valor de la uf para la fecha
+                      <strong>{{ selectedDateFormatted }}</strong> es de
+                      <strong>{{ formatCurrency(ufValue) }}</strong>
                     </p>
                   </div>
                 </div>
@@ -151,7 +201,7 @@ const exportCSV = () => {
 
         <!-- History -->
         <div
-          v-if="selectedTab === 'history'"
+          v-if="selectedTab === 'history' && user.role == 'admin'"
           class="surface-card p-5 shadow-2 border-round fadein animation-duration-900"
         >
           <div class="text-900 font-semibold text-lg mt-3">
@@ -163,7 +213,7 @@ const exportCSV = () => {
             <div class="grid">
               <div class="card">
                 <DataTable
-                  :value="entries"
+                  :value="conversions"
                   tableStyle="min-width: 50rem"
                   :striped-rows="true"
                   :show-gridlines="true"
@@ -171,7 +221,7 @@ const exportCSV = () => {
                   ref="table"
                   :paginator="true"
                   scrollable
-                  :rows="10"
+                  :rows="5"
                 >
                   <template #header>
                     <div style="text-align: left">
@@ -186,15 +236,34 @@ const exportCSV = () => {
                       />
                     </div>
                   </template>
-                  <Column field="code" header="Code" style="width: 20%"></Column>
-                  <Column field="name" header="Name" style="width: 20%"></Column>
-                  <Column field="price" header="Price">
+                  <Column field="user.name" header="Usuario" style="width: 20%">
                     <template #body="slotProps">
-                      {{ formatCurrency(slotProps.data.price) }}
+                      {{ slotProps.data.user.name }}
+                      <br />
+                      <small>{{ slotProps.data.user.email }}</small>
                     </template>
                   </Column>
-                  <Column field="category" header="Category" style="width: 20%"></Column>
-                  <Column field="quantity" header="Quantity" style="width: 20%"></Column>
+                  <Column field="date" header="Fecha Consulta" style="width: 20%">
+                    <template #body="slotProps">
+                      {{ formatDateTime(slotProps.data.date) }}
+                    </template>
+                  </Column>
+                  <Column field="uf_value" header="Valor UF del día" class="text-center">
+                    <template #body="slotProps">
+                      $ {{ formatCurrency(slotProps.data.uf_value) }}
+                    </template>
+                  </Column>
+                  <Column
+                    field="amount"
+                    header="Cantidad UF"
+                    style="width: 20%"
+                    class="text-center"
+                  />
+                  <Column field="converted_amount" header="Conversión" style="width: 20%">
+                    <template #body="slotProps">
+                      $ {{ formatCurrency(slotProps.data.converted_amount) }}
+                    </template>
+                  </Column>
                 </DataTable>
               </div>
             </div>
@@ -202,5 +271,6 @@ const exportCSV = () => {
         </div>
       </div>
     </div>
+    <Toast />
   </AppLayout>
 </template>

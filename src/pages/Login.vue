@@ -43,7 +43,7 @@ const submit = async () => {
   setTimeout(() => {
     loading.value = false
     router.push({ name: 'dashboard' })
-  }, 1000)
+  }, 300)
 }
 </script>
 <template>
