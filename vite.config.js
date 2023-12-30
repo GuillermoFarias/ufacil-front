@@ -14,4 +14,7 @@ export default defineConfig({
     }
   },
   publicDir: 'public',
+  define: {
+    __API_URL__: ''
+  },
 })
