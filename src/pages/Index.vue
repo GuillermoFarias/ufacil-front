@@ -145,6 +145,7 @@ const loadHistory = async () => {
                     iconDisplay="input"
                     :date-format="dateFormat"
                     :class="selectedDate === null ? 'p-invalid' : ''"
+                    :max-date="new Date()"
                   />
                 </div>
                 <div class="field mt-4">
