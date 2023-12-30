@@ -7,10 +7,9 @@ const apiUrl = import.meta.env.VITE_API_URL + '/api';
 const createAxiosInstance = () => {
     const router = useRouter();
 
-    const instance = axios.create({
-        baseURL: apiUrl
-    });
+    const instance = axios.create();
 
+    instance.defaults.baseURL = apiUrl;
     instance.interceptors.request.use(
         config => {
             const userStore = useUser();
