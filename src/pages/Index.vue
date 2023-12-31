@@ -147,7 +147,7 @@ const loadHistory = async () => {
           <Divider></Divider>
           <div class="flex">
             <div class="grid">
-              <div class="col sm:col-12 md:col lg:col xl:col">
+              <div class="mt-2 sm:col-12 md:col lg:col xl:col">
                 <div class="field">
                   <label for="email" class="block font-medium text-900 mb-2">Fecha</label>
                   <Calendar
